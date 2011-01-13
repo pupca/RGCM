@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+#REPO/.git/hooks/commit-msg
+message_file = ARGV[0]
+message = File.read(message_file)
+
+if /#\d+/.match(message)
+  id = /#(\d+)/.match(message)[1]
+  require 'rubygems'
+  require 'active_resource'
+
+  # Issue model on the client side
+  class Issue < ActiveResource::Base
+    self.site = 'redmine.org'#your redmine link
+    self.user = 'api_key'# your redmine api key
+  end
+  issues = Issue.find(id)
+  string = "##{id}: #{issues.subject} (http://#{Issue.site}/issues/#{id})"
+  message.gsub!(/#\d+/, string)
+  File.open(message_file, "w+") do |file|
+    file.puts message
+  end
+  puts message
+else
+  puts "Specify task number you have worked!!"
+end
+
